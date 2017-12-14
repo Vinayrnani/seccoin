@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2 (Linux)"/>
+	<meta name="created" content="2017-12-14T23:18:19.861235295"/>
+	<meta name="changed" content="2017-12-14T23:29:36.487376903"/>
+	
+	<style type="text/css">
+		body,div,table,thead,tbody,tfoot,tr,th,td,p { font-family:"Liberation Sans"; font-size:small }
+		a.comment-indicator:hover + comment { background:#ffd; position:absolute; display:block; border:1px solid black; padding:0.5em;  } 
+		a.comment-indicator { background:red; display:inline-block; border:1px solid black; width:0.5em; height:0.5em;  } 
+		comment { display:none;  } 
+	</style>
+<script type="text/javascript">
+	
+var BTC_GDAX_USD,BTC_GDAX_INR=0,BTC_ZEB_BUY,BTC_ZEB_SELL,BTC_CS_BUY,BTC_CS_SELL,RATE,zeb_gdax_profit_per_last=-999,zeb_gdax_profit_per_ch=0,gdax_zeb_profit_per_last=-999,gdax_zeb_change_per=0;
+
+var AMOUNT=20000;
+function getDetails(url){
+	var currentPrice = new XMLHttpRequest();
+	currentPrice.open('GET', url, true);
+	currentPrice.onreadystatechange = function(){
+	  if(currentPrice.readyState == 4){
+		var ticker = JSON.parse(currentPrice.responseText);
+		if(url.indexOf("gdax")>=0)
+			BTC_GDAX_USD=parseFloat(ticker.bids[0][0])*1.0025;
+		else if(url.indexOf("zeb")>=0){
+			BTC_ZEB_BUY=ticker.buy;
+			BTC_ZEB_SELL=ticker.sell;
+		}
+		else if(url.indexOf("fixer")>=0){
+			BTC_GDAX_INR=parseInt(parseFloat(document.getElementById('BTC_GDAX_USD').innerHTML)*parseFloat(ticker.rates.INR));
+			RATE=ticker.rates.INR;
+		}
+		else if(url.indexOf("coinsecure")>=0){
+			BTC_CS_BUY=ticker.message.bid;
+			BTC_CS_SELL=ticker.message.ask;
+		}
+		else
+			B=0;
+		updatepage();	
+	  };
+	};
+	currentPrice.send();
+}
+
+function updatepage(divobj){
+	if(divobj=="inv_inp_usd"){
+		AMOUNT=parseInt(document.getElementById('inv_inp_usd').value*RATE);
+		document.getElementById('inv_inp_inr').value=AMOUNT;
+		zeb_gdax_profit_per_last=-999;
+		gdax_zeb_profit_per_last=-999;
+		zeb_gdax_profit_per_ch=0;
+		gdax_zeb_change_per=0;
+	}
+	else if(divobj=="inv_inp_inr"){
+		AMOUNT=document.getElementById('inv_inp_inr').value;
+		document.getElementById('inv_inp_usd').value=parseFloat(AMOUNT/RATE).toFixed(2);
+		zeb_gdax_profit_per_last=-999;
+		gdax_zeb_profit_per_last=-999;
+		zeb_gdax_profit_per_ch=0;
+		gdax_zeb_change_per=0;	
+	}else{
+		AMOUNT=document.getElementById('inv_inp_inr').value;
+		document.getElementById('inv_inp_usd').value=parseFloat(AMOUNT/RATE).toFixed(2);
+	}
+	document.getElementById('RATE').innerHTML = RATE;
+	document.getElementById('BTC_GDAX_USD').innerHTML = BTC_GDAX_USD;
+	document.getElementById('BTC_GDAX_INR').innerHTML = parseInt(BTC_GDAX_USD*RATE);
+	document.getElementById('BTC_ZEB_BUY').innerHTML = BTC_ZEB_BUY;
+	document.getElementById('BTC_ZEB_SELL').innerHTML = BTC_ZEB_SELL;
+	document.getElementById('BTC_CS_BUY').innerHTML = BTC_CS_BUY;
+	document.getElementById('BTC_CS_SELL').innerHTuML = BTC_CS_SELL;
+	//Zeb to GDAX
+	btc_zeb_buy_amt=parseFloat (AMOUNT/BTC_ZEB_BUY).toFixed(10);
+	var zeb_fee=0;
+	document.getElementById('btc_zeb_buy_amt').innerHTML = btc_zeb_buy_amt;
+	if(btc_zeb_buy_amt>0.01)
+		zeb_fee=0.0005;
+	else 
+		zeb_fee=0.0001;
+	document.getElementById('zeb_fee').innerHTML = zeb_fee;
+	zeb_rem_btc=parseFloat(btc_zeb_buy_amt-zeb_fee).toFixed(10);
+	document.getElementById('zeb_rem_btc').innerHTML = zeb_rem_btc;
+	inr_gdax_sell_amt=parseInt(zeb_rem_btc*parseInt(BTC_GDAX_USD*RATE))
+	document.getElementById('inr_gdax_sell_amt').innerHTML = inr_gdax_sell_amt;
+	zeb_gdax_profit=inr_gdax_sell_amt-AMOUNT;
+	document.getElementById('zeb_gdax_profit').innerHTML = zeb_gdax_profit;
+	zeb_gdax_profit_per=parseFloat (zeb_gdax_profit/AMOUNT*100).toFixed(2);
+	if(zeb_gdax_profit_per_last==-999 && (zeb_gdax_profit_per>=0 || zeb_gdax_profit_per<0))
+		zeb_gdax_profit_per_last=zeb_gdax_profit_per;
+	else if(zeb_gdax_profit_per>=0 || zeb_gdax_profit_per<0)
+		zeb_gdax_profit_per_ch=parseFloat(zeb_gdax_profit_per-zeb_gdax_profit_per_last).toFixed(2);
+	if(zeb_gdax_profit_per>0)
+		document.getElementById('zeb_gdax_profit_per').innerHTML = "<span class='price' >"+zeb_gdax_profit_per+"%</span>";
+	else
+		document.getElementById('zeb_gdax_profit_per').innerHTML = "<span style='color:red' >"+zeb_gdax_profit_per+"%</span>";
+	if(zeb_gdax_profit_per_ch>0)
+		document.getElementById('zeb_gdax_profit_per_ch').innerHTML = "<span class='price' >"+zeb_gdax_profit_per_ch+"%</span>";
+	else
+		document.getElementById('zeb_gdax_profit_per_ch').innerHTML = "<span style='color:red' >"+zeb_gdax_profit_per_ch+"%</span>";
+	//GDAX to Zeb
+	btc_gdax_buy_amt=parseFloat (AMOUNT/parseInt(BTC_GDAX_USD*RATE)).toFixed(10);
+	var gdax_fee=0;
+	document.getElementById('btc_gdax_buy_amt').innerHTML = btc_gdax_buy_amt;
+	if(btc_gdax_buy_amt>0.01)
+		gdax_fee=0.0005;
+	else 
+		gdax_fee=0.0001;
+	document.getElementById('gdax_fee').innerHTML = gdax_fee;
+	gdax_rem_btc=parseFloat(btc_gdax_buy_amt-gdax_fee).toFixed(10);
+	document.getElementById('gdax_rem_btc').innerHTML = gdax_rem_btc;
+	inr_zeb_sell_amt=parseInt(gdax_rem_btc*BTC_ZEB_SELL)
+	document.getElementById('inr_zeb_sell_amt').innerHTML = inr_zeb_sell_amt;
+	gdax_zeb_profit=inr_zeb_sell_amt-AMOUNT;
+	document.getElementById('gdax_zeb_profit').innerHTML = gdax_zeb_profit;
+	gdax_zeb_profit_per=parseFloat (gdax_zeb_profit/AMOUNT*100).toFixed(2);
+	if(gdax_zeb_profit_per>0)
+		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span class='price' >"+gdax_zeb_profit_per+"%</span>";
+	else
+		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span style='color:red' >"+gdax_zeb_profit_per+"%</span>";
+	if(gdax_zeb_profit_per_last==-999 && (gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0))
+		gdax_zeb_profit_per_last=gdax_zeb_profit_per;
+	else if(gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0)
+		gdax_zeb_change_per=parseFloat(gdax_zeb_profit_per-gdax_zeb_profit_per_last).toFixed(2);
+	if(gdax_zeb_change_per>0)
+		document.getElementById('gdax_zeb_change_per').innerHTML = "<span class='price' >"+gdax_zeb_change_per+"%</span>";
+	else
+		document.getElementById('gdax_zeb_change_per').innerHTML = "<span style='color:red' >"+gdax_zeb_change_per+"%</span>";
+	//GDAX to coinsecure
+	btc_gdax_buy_amt=parseFloat (AMOUNT/parseInt(BTC_GDAX_USD*RATE)).toFixed(10);
+	var gdax_fee=0;
+	document.getElementById('btc_gdax_buy_amt').innerHTML = btc_gdax_buy_amt;
+	if(btc_gdax_buy_amt>0.01)
+		gdax_fee=0.0005;
+	else 
+		gdax_fee=0.0001;
+	document.getElementById('gdax_fee').innerHTML = gdax_fee;
+	gdax_rem_btc=parseFloat(btc_gdax_buy_amt-gdax_fee).toFixed(10);
+	document.getElementById('gdax_rem_btc').innerHTML = gdax_rem_btc;
+	inr_zeb_sell_amt=parseInt(gdax_rem_btc*BTC_ZEB_SELL)
+	document.getElementById('inr_zeb_sell_amt').innerHTML = inr_zeb_sell_amt;
+	gdax_zeb_profit=inr_zeb_sell_amt-AMOUNT;
+	document.getElementById('gdax_zeb_profit').innerHTML = gdax_zeb_profit;
+	gdax_zeb_profit_per=parseFloat (gdax_zeb_profit/AMOUNT*100).toFixed(2);
+	if(gdax_zeb_profit_per>0)
+		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span class='price' >"+gdax_zeb_profit_per+"%</span>";
+	else
+		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span style='color:red' >"+gdax_zeb_profit_per+"%</span>";
+	if(gdax_zeb_profit_per_last==-999 && (gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0))
+		gdax_zeb_profit_per_last=gdax_zeb_profit_per;
+	else if(gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0)
+		gdax_zeb_change_per=parseFloat(gdax_zeb_profit_per-gdax_zeb_profit_per_last).toFixed(2);
+	if(gdax_zeb_change_per>0)
+		document.getElementById('gdax_zeb_change_per').innerHTML = "<span class='price' >"+gdax_zeb_change_per+"%</span>";
+	else
+		document.getElementById('gdax_zeb_change_per').innerHTML = "<span style='color:red' >"+gdax_zeb_change_per+"%</span>";
+	
+
+
+	document.getElementById('inv').innerHTML = AMOUNT+" INR/"+parseFloat(AMOUNT/RATE).toFixed(2)+" USD";
+}
+
+function startIt(){
+	getDetails('https://www.zebapi.com/api/v1/market/ticker/btc/inr');
+	getDetails('https://api.gdax.com/products/BTC-USD/book');
+	if(BTC_GDAX_INR==0)
+		getDetails('https://api.fixer.io/latest?symbols=USD,INR&base=USD');
+	getDetails('https://seccoin-seccoin.193b.starter-ca-central-1.openshiftapps.com/coinsecure.php');
+
+	//setTimeout(startIt(),10000);	
+}
+setInterval(function(){startIt();},5000);
+</script>	
+</head>
+
+<body>
+
+<table cellspacing="0" border="0">
+	<colgroup width="128"></colgroup>
+	<colgroup width="174"></colgroup>
+	<colgroup width="107"></colgroup>
+	<colgroup width="111"></colgroup>
+	<colgroup width="85"></colgroup>
+	<colgroup width="116"></colgroup>
+	<colgroup width="195"></colgroup>
+	<colgroup width="206"></colgroup>
+	<tr>
+		<td height="33" align="left"><font size=5>1 USD = </font></td>
+		<td align="left"><font size=5>₹<b style="color:red" id="RATE"></b> INR</font></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td height="17" align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>Provider</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>BUY</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>SELL</b></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>GDAX</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">$<span id="BTC_GDAX_USD"></span>/₹<span id="BTC_GDAX_INR"></span></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">-</td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>ZebPay</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_ZEB_BUY"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_ZEB_SELL"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>Coinsecure</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_CS_BUY"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_CS_SELL"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr>
+		<td height="17" align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+		<td align="left"><br></td>
+	</tr>
+	<tr><td colspan="5"><b>Input Investment - INR:<input type=text id=inv_inp_inr onchange="updatepage(this.id)" value="10000"/> USD:<input type=text id=inv_inp_usd onchange="updatepage(this.id)"/>
+  </b></td>
+  <td>  
+  <b><center>Investment:<span class='price' id=inv></span></center>
+ </b></td></tr>
+ <tr><td><br></td></tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>From</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>BTC</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Fee</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Remaining BTC</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Sell To</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Sold INR</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Profit</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Profit Percentage</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Change in % since last refresh</b></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 height="34" align="center" valign=middle>GDAX</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="btc_gdax_buy_amt"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="gdax_fee"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="gdax_rem_btc"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">ZebPay</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_zeb_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_zeb_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_zeb_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_zeb_change_per"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">CoinSecure</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_cs_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_cs_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_cs_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="gdax_cs_change_per"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 height="34" align="center" valign=middle>ZebPay</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="btc_zeb_buy_amt"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="zeb_fee"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="zeb_rem_btc"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">GDAX</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_gdax_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_gdax_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_gdax_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_gdax_change_per"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">CoinSecure</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_cs_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_cs_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_cs_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="zeb_cs_change_per"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 height="34" align="center" valign=middle>CoinSecure</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="btc_cs_buy_amt"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="cs_fee"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" rowspan=2 align="center" valign=middle id="cs_rem_btc"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">ZebPay</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_zeb_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_zeb_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_zeb_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_zeb_change_per"><br></td>
+	</tr>
+	<tr>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">GDAX</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_gdax_sell"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_gdax_profit"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_gdax_profit_per"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="cs_gdax_change_per"><br></td>
+	</tr>
+
+
+
+
+
+</table>
+<!-- ************************************************************************** -->
+</body>
+
+</html>
