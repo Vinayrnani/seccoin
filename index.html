@@ -15,9 +15,25 @@
 		a.comment-indicator { background:red; display:inline-block; border:1px solid black; width:0.5em; height:0.5em;  } 
 		comment { display:none;  } 
 	</style>
+
+<Style type="text/css">
+.price {
+  font-size: 1em;
+  font-family: arial;
+  font-weight: bold;
+  color:green;
+}
+
+</style>
 <script type="text/javascript">
 	
-var BTC_GDAX_USD,BTC_GDAX_INR=0,BTC_ZEB_BUY,BTC_ZEB_SELL,BTC_CS_BUY,BTC_CS_SELL,RATE,zeb_gdax_profit_per_last=-999,zeb_gdax_profit_per_ch=0,gdax_zeb_profit_per_last=-999,gdax_zeb_change_per=0;
+var BTC_GDAX_USD,BTC_GDAX_INR=0,BTC_ZEB_BUY,BTC_ZEB_SELL,BTC_CS_BUY,BTC_CS_SELL,RATE,
+zeb_gdax_profit_per_last=-999,zeb_gdax_change_per=0,
+gdax_zeb_profit_per_last=-999,gdax_zeb_change_per=0,
+zeb_cs_profit_per_last=-999,zeb_cs_change_per=0,
+gdax_cs_profit_per_last=-999,gdax_cs_change_per=0,
+cs_gdax_profit_per_last=-999,cs_gdax_change_per=0,
+cs_zeb_profit_per_last=-999,cs_zeb_change_per=0;
 
 var AMOUNT=20000;
 function getDetails(url){
@@ -27,7 +43,7 @@ function getDetails(url){
 	  if(currentPrice.readyState == 4){
 		var ticker = JSON.parse(currentPrice.responseText);
 		if(url.indexOf("gdax")>=0)
-			BTC_GDAX_USD=parseFloat(ticker.bids[0][0])*1.0025;
+			BTC_GDAX_USD=parseFloat(ticker.bids[0][0]*1.0025).toFixed(2);
 		else if(url.indexOf("zeb")>=0){
 			BTC_ZEB_BUY=ticker.buy;
 			BTC_ZEB_SELL=ticker.sell;
@@ -37,8 +53,8 @@ function getDetails(url){
 			RATE=ticker.rates.INR;
 		}
 		else if(url.indexOf("coinsecure")>=0){
-			BTC_CS_BUY=ticker.message.bid;
-			BTC_CS_SELL=ticker.message.ask;
+			BTC_CS_BUY=parseInt(ticker.message.bid*1.04/100);
+			BTC_CS_SELL=parseInt(ticker.message.ask*0.96/100);
 		}
 		else
 			B=0;
@@ -52,18 +68,22 @@ function updatepage(divobj){
 	if(divobj=="inv_inp_usd"){
 		AMOUNT=parseInt(document.getElementById('inv_inp_usd').value*RATE);
 		document.getElementById('inv_inp_inr').value=AMOUNT;
-		zeb_gdax_profit_per_last=-999;
-		gdax_zeb_profit_per_last=-999;
-		zeb_gdax_profit_per_ch=0;
-		gdax_zeb_change_per=0;
+		zeb_gdax_profit_per_last=-999,zeb_gdax_change_per=0,
+		gdax_zeb_profit_per_last=-999,gdax_zeb_change_per=0,
+		zeb_cs_profit_per_last=-999,zeb_cs_change_per=0,
+		gdax_cs_profit_per_last=-999,gdax_cs_change_per=0,
+		cs_gdax_profit_per_last=-999,cs_gdax_change_per=0,
+		cs_zeb_profit_per_last=-999,cs_zeb_change_per=0;
 	}
 	else if(divobj=="inv_inp_inr"){
 		AMOUNT=document.getElementById('inv_inp_inr').value;
 		document.getElementById('inv_inp_usd').value=parseFloat(AMOUNT/RATE).toFixed(2);
-		zeb_gdax_profit_per_last=-999;
-		gdax_zeb_profit_per_last=-999;
-		zeb_gdax_profit_per_ch=0;
-		gdax_zeb_change_per=0;	
+		zeb_gdax_profit_per_last=-999,zeb_gdax_change_per=0,
+		gdax_zeb_profit_per_last=-999,gdax_zeb_change_per=0,
+		zeb_cs_profit_per_last=-999,zeb_cs_change_per=0,
+		gdax_cs_profit_per_last=-999,gdax_cs_change_per=0,
+		cs_gdax_profit_per_last=-999,cs_gdax_change_per=0,
+		cs_zeb_profit_per_last=-999,cs_zeb_change_per=0;	
 	}else{
 		AMOUNT=document.getElementById('inv_inp_inr').value;
 		document.getElementById('inv_inp_usd').value=parseFloat(AMOUNT/RATE).toFixed(2);
@@ -74,7 +94,7 @@ function updatepage(divobj){
 	document.getElementById('BTC_ZEB_BUY').innerHTML = BTC_ZEB_BUY;
 	document.getElementById('BTC_ZEB_SELL').innerHTML = BTC_ZEB_SELL;
 	document.getElementById('BTC_CS_BUY').innerHTML = BTC_CS_BUY;
-	document.getElementById('BTC_CS_SELL').innerHTuML = BTC_CS_SELL;
+	document.getElementById('BTC_CS_SELL').innerHTML = BTC_CS_SELL;
 	//Zeb to GDAX
 	btc_zeb_buy_amt=parseFloat (AMOUNT/BTC_ZEB_BUY).toFixed(10);
 	var zeb_fee=0;
@@ -86,23 +106,42 @@ function updatepage(divobj){
 	document.getElementById('zeb_fee').innerHTML = zeb_fee;
 	zeb_rem_btc=parseFloat(btc_zeb_buy_amt-zeb_fee).toFixed(10);
 	document.getElementById('zeb_rem_btc').innerHTML = zeb_rem_btc;
-	inr_gdax_sell_amt=parseInt(zeb_rem_btc*parseInt(BTC_GDAX_USD*RATE))
-	document.getElementById('inr_gdax_sell_amt').innerHTML = inr_gdax_sell_amt;
-	zeb_gdax_profit=inr_gdax_sell_amt-AMOUNT;
+	zeb_gdax_sell=parseInt(zeb_rem_btc*parseInt(BTC_GDAX_USD*RATE))
+	document.getElementById('zeb_gdax_sell').innerHTML = zeb_gdax_sell;
+	zeb_gdax_profit=zeb_gdax_sell-AMOUNT;
 	document.getElementById('zeb_gdax_profit').innerHTML = zeb_gdax_profit;
 	zeb_gdax_profit_per=parseFloat (zeb_gdax_profit/AMOUNT*100).toFixed(2);
 	if(zeb_gdax_profit_per_last==-999 && (zeb_gdax_profit_per>=0 || zeb_gdax_profit_per<0))
 		zeb_gdax_profit_per_last=zeb_gdax_profit_per;
 	else if(zeb_gdax_profit_per>=0 || zeb_gdax_profit_per<0)
-		zeb_gdax_profit_per_ch=parseFloat(zeb_gdax_profit_per-zeb_gdax_profit_per_last).toFixed(2);
+		zeb_gdax_change_per=parseFloat(zeb_gdax_profit_per-zeb_gdax_profit_per_last).toFixed(2);
 	if(zeb_gdax_profit_per>0)
 		document.getElementById('zeb_gdax_profit_per').innerHTML = "<span class='price' >"+zeb_gdax_profit_per+"%</span>";
 	else
 		document.getElementById('zeb_gdax_profit_per').innerHTML = "<span style='color:red' >"+zeb_gdax_profit_per+"%</span>";
-	if(zeb_gdax_profit_per_ch>0)
-		document.getElementById('zeb_gdax_profit_per_ch').innerHTML = "<span class='price' >"+zeb_gdax_profit_per_ch+"%</span>";
+	if(zeb_gdax_change_per>0)
+		document.getElementById('zeb_gdax_change_per').innerHTML = "<span class='price' >"+zeb_gdax_change_per+"%</span>";
 	else
-		document.getElementById('zeb_gdax_profit_per_ch').innerHTML = "<span style='color:red' >"+zeb_gdax_profit_per_ch+"%</span>";
+		document.getElementById('zeb_gdax_change_per').innerHTML = "<span style='color:red' >"+zeb_gdax_change_per+"%</span>";
+	//Zeb to CS
+	zeb_cs_sell=parseInt(zeb_rem_btc*parseInt(BTC_CS_SELL))
+	document.getElementById('zeb_cs_sell').innerHTML = zeb_cs_sell;
+	zeb_cs_profit=zeb_cs_sell-AMOUNT;
+	document.getElementById('zeb_cs_profit').innerHTML = zeb_cs_profit;
+	zeb_cs_profit_per=parseFloat (zeb_cs_profit/AMOUNT*100).toFixed(2);
+	if(zeb_cs_profit_per_last==-999 && (zeb_cs_profit_per>=0 || zeb_cs_profit_per<0))
+		zeb_cs_profit_per_last=zeb_cs_profit_per;
+	else if(zeb_cs_profit_per>=0 || zeb_cs_profit_per<0)
+		zeb_cs_change_per=parseFloat(zeb_cs_profit_per-zeb_cs_profit_per_last).toFixed(2);
+	if(zeb_cs_profit_per>0)
+		document.getElementById('zeb_cs_profit_per').innerHTML = "<span class='price' >"+zeb_cs_profit_per+"%</span>";
+	else
+		document.getElementById('zeb_cs_profit_per').innerHTML = "<span style='color:red' >"+zeb_cs_profit_per+"%</span>";
+	if(zeb_cs_change_per>0)
+		document.getElementById('zeb_cs_change_per').innerHTML = "<span class='price' >"+zeb_cs_change_per+"%</span>";
+	else
+		document.getElementById('zeb_cs_change_per').innerHTML = "<span style='color:red' >"+zeb_cs_change_per+"%</span>";
+	
 	//GDAX to Zeb
 	btc_gdax_buy_amt=parseFloat (AMOUNT/parseInt(BTC_GDAX_USD*RATE)).toFixed(10);
 	var gdax_fee=0;
@@ -114,9 +153,9 @@ function updatepage(divobj){
 	document.getElementById('gdax_fee').innerHTML = gdax_fee;
 	gdax_rem_btc=parseFloat(btc_gdax_buy_amt-gdax_fee).toFixed(10);
 	document.getElementById('gdax_rem_btc').innerHTML = gdax_rem_btc;
-	inr_zeb_sell_amt=parseInt(gdax_rem_btc*BTC_ZEB_SELL)
-	document.getElementById('inr_zeb_sell_amt').innerHTML = inr_zeb_sell_amt;
-	gdax_zeb_profit=inr_zeb_sell_amt-AMOUNT;
+	gdax_zeb_sell=parseInt(gdax_rem_btc*BTC_ZEB_SELL)
+	document.getElementById('gdax_zeb_sell').innerHTML = gdax_zeb_sell;
+	gdax_zeb_profit=gdax_zeb_sell-AMOUNT;
 	document.getElementById('gdax_zeb_profit').innerHTML = gdax_zeb_profit;
 	gdax_zeb_profit_per=parseFloat (gdax_zeb_profit/AMOUNT*100).toFixed(2);
 	if(gdax_zeb_profit_per>0)
@@ -132,35 +171,70 @@ function updatepage(divobj){
 	else
 		document.getElementById('gdax_zeb_change_per').innerHTML = "<span style='color:red' >"+gdax_zeb_change_per+"%</span>";
 	//GDAX to coinsecure
-	btc_gdax_buy_amt=parseFloat (AMOUNT/parseInt(BTC_GDAX_USD*RATE)).toFixed(10);
-	var gdax_fee=0;
-	document.getElementById('btc_gdax_buy_amt').innerHTML = btc_gdax_buy_amt;
-	if(btc_gdax_buy_amt>0.01)
-		gdax_fee=0.0005;
-	else 
-		gdax_fee=0.0001;
-	document.getElementById('gdax_fee').innerHTML = gdax_fee;
-	gdax_rem_btc=parseFloat(btc_gdax_buy_amt-gdax_fee).toFixed(10);
-	document.getElementById('gdax_rem_btc').innerHTML = gdax_rem_btc;
-	inr_zeb_sell_amt=parseInt(gdax_rem_btc*BTC_ZEB_SELL)
-	document.getElementById('inr_zeb_sell_amt').innerHTML = inr_zeb_sell_amt;
-	gdax_zeb_profit=inr_zeb_sell_amt-AMOUNT;
-	document.getElementById('gdax_zeb_profit').innerHTML = gdax_zeb_profit;
-	gdax_zeb_profit_per=parseFloat (gdax_zeb_profit/AMOUNT*100).toFixed(2);
-	if(gdax_zeb_profit_per>0)
-		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span class='price' >"+gdax_zeb_profit_per+"%</span>";
+	gdax_cs_sell=parseInt(gdax_rem_btc*BTC_CS_SELL)
+	document.getElementById('gdax_cs_sell').innerHTML = gdax_zeb_sell;
+	gdax_cs_profit=gdax_cs_sell-AMOUNT;
+	document.getElementById('gdax_cs_profit').innerHTML = gdax_cs_profit;
+	gdax_cs_profit_per=parseFloat (gdax_cs_profit/AMOUNT*100).toFixed(2);
+	if(gdax_cs_profit_per>0)
+		document.getElementById('gdax_cs_profit_per').innerHTML = "<span class='price' >"+gdax_cs_profit_per+"%</span>";
 	else
-		document.getElementById('gdax_zeb_profit_per').innerHTML = "<span style='color:red' >"+gdax_zeb_profit_per+"%</span>";
-	if(gdax_zeb_profit_per_last==-999 && (gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0))
-		gdax_zeb_profit_per_last=gdax_zeb_profit_per;
-	else if(gdax_zeb_profit_per>=0 || gdax_zeb_profit_per<0)
-		gdax_zeb_change_per=parseFloat(gdax_zeb_profit_per-gdax_zeb_profit_per_last).toFixed(2);
-	if(gdax_zeb_change_per>0)
-		document.getElementById('gdax_zeb_change_per').innerHTML = "<span class='price' >"+gdax_zeb_change_per+"%</span>";
+		document.getElementById('gdax_cs_profit_per').innerHTML = "<span style='color:red' >"+gdax_cs_profit_per+"%</span>";
+	if(gdax_cs_profit_per_last==-999 && (gdax_cs_profit_per>=0 || gdax_cs_profit_per<0))
+		gdax_cs_profit_per_last=gdax_cs_profit_per;
+	else if(gdax_cs_profit_per>=0 || gdax_cs_profit_per<0)
+		gdax_cs_change_per=parseFloat(gdax_cs_profit_per-gdax_cs_profit_per_last).toFixed(2);
+	if(gdax_cs_change_per>0)
+		document.getElementById('gdax_cs_change_per').innerHTML = "<span class='price' >"+gdax_cs_change_per+"%</span>";
 	else
-		document.getElementById('gdax_zeb_change_per').innerHTML = "<span style='color:red' >"+gdax_zeb_change_per+"%</span>";
+		document.getElementById('gdax_cs_change_per').innerHTML = "<span style='color:red' >"+gdax_cs_change_per+"%</span>";
 	
-
+//cs to GDAX
+	btc_cs_buy_amt=parseFloat (AMOUNT/BTC_CS_BUY).toFixed(10);
+	var cs_fee=0;
+	document.getElementById('btc_cs_buy_amt').innerHTML = btc_cs_buy_amt;
+	if(btc_cs_buy_amt>0.01)
+		cs_fee=0.0005;
+	else 
+		cs_fee=0.0001;
+	document.getElementById('cs_fee').innerHTML = cs_fee;
+	cs_rem_btc=parseFloat(btc_cs_buy_amt-cs_fee).toFixed(10);
+	document.getElementById('cs_rem_btc').innerHTML = cs_rem_btc;
+	cs_zeb_sell=parseInt(cs_rem_btc*parseInt(BTC_ZEB_SELL))
+	document.getElementById('cs_zeb_sell').innerHTML = cs_zeb_sell;
+	cs_zeb_profit=cs_zeb_sell-AMOUNT;
+	document.getElementById('cs_zeb_profit').innerHTML = cs_zeb_profit;
+	cs_zeb_profit_per=parseFloat (cs_zeb_profit/AMOUNT*100).toFixed(2);
+	if(cs_zeb_profit_per_last==-999 && (cs_zeb_profit_per>=0 || cs_zeb_profit_per<0))
+		cs_zeb_profit_per_last=cs_zeb_profit_per;
+	else if(cs_zeb_profit_per>=0 || cs_zeb_profit_per<0)
+		cs_zeb_change_per=parseFloat(cs_zeb_profit_per-cs_zeb_profit_per_last).toFixed(2);
+	if(cs_zeb_profit_per>0)
+		document.getElementById('cs_zeb_profit_per').innerHTML = "<span class='price' >"+cs_zeb_profit_per+"%</span>";
+	else
+		document.getElementById('cs_zeb_profit_per').innerHTML = "<span style='color:red' >"+cs_zeb_profit_per+"%</span>";
+	if(cs_zeb_change_per>0)
+		document.getElementById('cs_zeb_change_per').innerHTML = "<span class='price' >"+cs_zeb_change_per+"%</span>";
+	else
+		document.getElementById('cs_zeb_change_per').innerHTML = "<span style='color:red' >"+cs_zeb_change_per+"%</span>";
+	//cs to zeb
+	cs_gdax_sell=parseInt(cs_rem_btc*parseInt(BTC_GDAX_USD*RATE))
+	document.getElementById('cs_gdax_sell').innerHTML = cs_gdax_sell;
+	cs_gdax_profit=cs_gdax_sell-AMOUNT;
+	document.getElementById('cs_gdax_profit').innerHTML = cs_gdax_profit;
+	cs_gdax_profit_per=parseFloat (cs_gdax_profit/AMOUNT*100).toFixed(2);
+	if(cs_gdax_profit_per_last==-999 && (cs_gdax_profit_per>=0 || cs_gdax_profit_per<0))
+		cs_gdax_profit_per_last=cs_gdax_profit_per;
+	else if(cs_gdax_profit_per>=0 || cs_gdax_profit_per<0)
+		cs_gdax_change_per=parseFloat(cs_gdax_profit_per-cs_gdax_profit_per_last).toFixed(2);
+	if(cs_gdax_profit_per>0)
+		document.getElementById('cs_gdax_profit_per').innerHTML = "<span class='price' >"+cs_gdax_profit_per+"%</span>";
+	else
+		document.getElementById('cs_gdax_profit_per').innerHTML = "<span style='color:red' >"+cs_gdax_profit_per+"%</span>";
+	if(cs_gdax_change_per>0)
+		document.getElementById('cs_gdax_change_per').innerHTML = "<span class='price' >"+cs_gdax_change_per+"%</span>";
+	else
+		document.getElementById('cs_gdax_change_per').innerHTML = "<span style='color:red' >"+cs_gdax_change_per+"%</span>";
 
 	document.getElementById('inv').innerHTML = AMOUNT+" INR/"+parseFloat(AMOUNT/RATE).toFixed(2)+" USD";
 }
@@ -170,7 +244,7 @@ function startIt(){
 	getDetails('https://api.gdax.com/products/BTC-USD/book');
 	if(BTC_GDAX_INR==0)
 		getDetails('https://api.fixer.io/latest?symbols=USD,INR&base=USD');
-	getDetails('https://seccoin-seccoin.193b.starter-ca-central-1.openshiftapps.com/coinsecure.php');
+	getDetails('http://seccoin-seccoin.193b.starter-ca-central-1.openshiftapps.com/coinsecure.php');
 
 	//setTimeout(startIt(),10000);	
 }
@@ -261,8 +335,8 @@ setInterval(function(){startIt();},5000);
 	</tr>
 	<tr><td colspan="5"><b>Input Investment - INR:<input type=text id=inv_inp_inr onchange="updatepage(this.id)" value="10000"/> USD:<input type=text id=inv_inp_usd onchange="updatepage(this.id)"/>
   </b></td>
-  <td>  
-  <b><center>Investment:<span class='price' id=inv></span></center>
+  <td colspan="3">  
+  <center>Investment:<b><span class='price' id=inv></span></center>
  </b></td></tr>
  <tr><td><br></td></tr>
 	<tr>
