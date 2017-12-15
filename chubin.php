@@ -3,7 +3,7 @@
         $ch = curl_init(); 
 
         // set url 
-        curl_setopt($ch, CURLOPT_URL, "https://www.coinhubindia.com"); 
+        curl_setopt($ch, CURLOPT_URL, "https://coinhubindia.com/home/markets/BTC_INR"); 
 
         //return the transfer as a string 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
