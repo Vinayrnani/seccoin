@@ -1,6 +1,17 @@
-<?php
+<?php 
+        // create curl resource 
+        $ch = curl_init(); 
 
-$site_contents=file_get_contents('https://www.coinhubindia.com');
-echo substr($site_contents,strpos($site_contents,'<rate'),strpos($site_contents,'</rate'));
+        // set url 
+        curl_setopt($ch, CURLOPT_URL, "https://www.coinhubindia.com"); 
 
+        //return the transfer as a string 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+
+        // $output contains the output string 
+        $output = curl_exec($ch); 
+        echo $output;
+
+        // close curl resource to free up system resources 
+        curl_close($ch);      
 ?>
