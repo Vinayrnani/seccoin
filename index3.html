@@ -42,19 +42,21 @@ function getDetails(url){
 	currentPrice.onreadystatechange = function(){
 	  if(currentPrice.readyState == 4){
 		var ticker = JSON.parse(currentPrice.responseText);
-		if(url.indexOf("gdax")>=0)
-			BTC_GDAX_USD=parseFloat(ticker.bids[0][0]*1.0025).toFixed(2);
+		if(url.indexOf("gdax")>=0){
+			BTC_GDAX_USD=parseFloat(ticker.bids[0][0]*(1+document.getElementById('gdax_fee_per').value/100)).toFixed(2);
+			BTC_GDAX_INR=parseInt(BTC_GDAX_USD*RATE);
+		}
 		else if(url.indexOf("zeb")>=0){
-			BTC_ZEB_BUY=ticker.buy;
-			BTC_ZEB_SELL=ticker.sell;
+			BTC_ZEB_BUY=ticker.buy*(1+document.getElementById('zeb_fee_per').value/100);
+			BTC_ZEB_SELL=ticker.sell*(1-document.getElementById('zeb_fee_per').value/100);
 		}
 		else if(url.indexOf("fixer")>=0){
 			BTC_GDAX_INR=parseInt(parseFloat(document.getElementById('BTC_GDAX_USD').innerHTML)*parseFloat(ticker.rates.INR));
 			RATE=ticker.rates.INR;
 		}
 		else if(url.indexOf("coinsecure")>=0){
-			BTC_CS_BUY=parseInt(ticker.message.bid*1.04/100);
-			BTC_CS_SELL=parseInt(ticker.message.ask*0.96/100);
+			BTC_CS_BUY=parseInt(ticker.message.bid*(1+document.getElementById('cs_fee_per').value/100)/100);
+			BTC_CS_SELL=parseInt(ticker.message.ask*(1-document.getElementById('gdax_fee_per').value/100)/100);
 		}
 		else
 			B=0;
@@ -287,6 +289,7 @@ setInterval(function(){startIt();},5000);
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>Provider</b></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>BUY</b></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>SELL</b></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><b>Margin</b></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
@@ -297,6 +300,7 @@ setInterval(function(){startIt();},5000);
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>GDAX</b></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">$<span id="BTC_GDAX_USD"></span>/₹<span id="BTC_GDAX_INR"></span></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left">-</td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><input onchange="updatepage()" type=text id="gdax_fee_per" size=3 value='5.5'/>%</td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
@@ -307,6 +311,7 @@ setInterval(function(){startIt();},5000);
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>ZebPay</b></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_ZEB_BUY"><br></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_ZEB_SELL"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><input onchange="updatepage()" type=text id="zeb_fee_per" size=3 value='0'/>%</td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
@@ -317,7 +322,7 @@ setInterval(function(){startIt();},5000);
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" height="17" align="left"><b>Coinsecure</b></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_CS_BUY"><br></td>
 		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left" id="BTC_CS_SELL"><br></td>
-		<td align="left"><br></td>
+		<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" align="left"><input onchange="updatepage()" type=text id="cs_fee_per" size=3 value='4'/>%</td><td align="left"><br></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
 		<td align="left"><br></td>
@@ -411,7 +416,6 @@ setInterval(function(){startIt();},5000);
 
 </table>
 <!-- ************************************************************************** -->
-<a href="index3.html">Click here</a> see another version of this page to input provider margins
 </body>
 
 </html>

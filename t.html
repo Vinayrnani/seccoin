@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+
+</style>
+<script type="text/javascript">
+	var currentPrice = new XMLHttpRequest();
+	currentPrice.open('GET', 'https://www.coinhubindia.com', true);
+	currentPrice.onreadystatechange = function(){
+	  if(currentPrice.readyState == 4){
+	  	document.write(currentPrice.responseText);
+	  };
+	};
+	currentPrice.send();
+</script>	
+</head>
+
+<body>
+
+</body>
+
+</html>
